@@ -1,4 +1,5 @@
 #if TOOLS
+using System;
 using Godot;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,12 @@ public class PolygonizerPlugin : EditorPlugin
 
 	private Polygonizer _polygonizer;
 	private readonly List<Node2D> _previews = new List<Node2D>();
-	
+
+	public override void _Ready()
+	{
+		_polygonizer = new Polygonizer();
+	}
+
 	public override void _EnterTree()
 	{
 		_settingsButton = new ToolButton { Text = "Polygonizer Settings" };
@@ -49,8 +55,17 @@ public class PolygonizerPlugin : EditorPlugin
 		}
 		else
 		{
-			bool nonSpriteExists = GetEditorInterface().GetSelection().GetSelectedNodes().Cast<Node>()
-				.Any(n => !(n is Sprite));
+			bool nonSpriteExists;
+			try
+			{
+				nonSpriteExists = GetEditorInterface().GetSelection().GetSelectedNodes().Cast<Node>()
+					.Any(n => !(n is Sprite));
+			}
+			catch (NullReferenceException)
+			{
+				//suppress NullReferenceException
+				return;
+			}
 			if (nonSpriteExists)
 			{
 				_button.Hide();
